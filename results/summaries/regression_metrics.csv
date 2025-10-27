@@ -1,0 +1,2 @@
+model,r2_score,mse
+RandomForestRegressor,0.5177654720881466,2.9466357803307788
