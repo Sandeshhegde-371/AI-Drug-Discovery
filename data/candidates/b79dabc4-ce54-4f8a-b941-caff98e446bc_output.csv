@@ -1,0 +1,6 @@
+compound_id,structure,molecular_weight,property_1,property_2,property_3,activity_score,generated_candidate,predicted_activity
+COMP001,CC(=O)OC1=CC=CC=C1C(=O)O,180.16,1.19,1,4,0.85,mol_1,0.05
+COMP002,CC(C)CC1=CC=C(C=C1)C(C)C(=O)O,206.28,3.97,1,2,0.72,mol_2,0.1
+COMP003,CN1C=NC2=C1C(=O)N(C(=O)N2C)C,194.19,-0.02,0,6,0.91,mol_3,0.15
+COMP004,CC1=CC=C(C=C1)C2=CC(=NN2C3=CC=C(C=C3)S(=O)(=O)N)C(F)(F)F,425.42,4.15,1,7,0.68,mol_4,0.2
+COMP005,CC(C)NCC(COC1=CC=CC=C1)O,167.25,1.87,2,3,0.78,mol_5,0.25
