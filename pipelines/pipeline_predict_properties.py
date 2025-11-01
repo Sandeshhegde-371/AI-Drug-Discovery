@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--input', required=True, help='Input compound CSV')
     args = parser.parse_args()
     try:
-        predict_for_new_compounds.predict_properties(
+        predict_for_new_compounds.predict_activity(
             input_csv=args.input,
             model_file='./models/multitask_admet_model.h5',
             output_csv='./results/property_predictions.csv'

@@ -4,7 +4,8 @@ import sys
 import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from src import screening
+from src import prioritize_candidates
+
 
 logging.basicConfig(
     filename='./results/logs/pipeline_prioritize_candidates.log',
@@ -19,9 +20,9 @@ def main():
     parser.add_argument('--num_candidates', type=int, default=50, help='Top N compounds')
     args = parser.parse_args()
     try:
-        screening.prioritize_candidates(
+        prioritize_candidates.prioritize_candidates(
             pred_csv=args.input,
-            output_csv='./results/prioritized_candidates.csv',
+            output_csv='./data/candidates/prioritized_candidates.csv',
             priority_metric=args.metric,
             top_n=args.num_candidates
         )
