@@ -13,7 +13,6 @@ RESULTS_FOLDER = os.path.join(BASE_DIR, 'data', 'candidates')
 LOGS_FOLDER = os.path.join(BASE_DIR, 'results', 'logs')
 MODELS_FOLDER = os.path.join(BASE_DIR, 'models')
 
-# Ensure required folders exist
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 os.makedirs(LOGS_FOLDER, exist_ok=True)
 os.makedirs(MODELS_FOLDER, exist_ok=True)
@@ -33,11 +32,11 @@ logging.basicConfig(
 # ---------------------------------------------------------------------
 try:
     sys.path.insert(0, os.path.join(BASE_DIR, 'src'))
-    from src import generative_design
+    import importlib
+    generative_design = importlib.import_module('generative_design')
 except Exception as e:
-    print("[WARN] Could not import generative_design module. Using mock mode.")
+    print("[WARN] Could not import generative_design module. Pipeline will use fallback.")
     generative_design = None
-
 
 def main():
     parser = argparse.ArgumentParser(description="Run generative screening pipeline")
@@ -61,36 +60,23 @@ def main():
         # -----------------------------------------------------------------
         model_file = os.path.join(MODELS_FOLDER, 'multitask_admet_model.h5')
         if not os.path.exists(model_file):
-            print("[WARN] Model file missing. Generating mock data...")
+            print("[WARN] Model file missing. Only dummy chemistry possible.")
             logging.warning("Model not found. Using mock data generation.")
-            df = pd.read_csv(args.input)
-
-            # Ensure SMILES column exists
-            if 'smiles' not in df.columns:
-                print("SMILES column missing in seed file.")
-                df['smiles'] = ['C', 'CC', 'CCC'][:len(df)]
-
-            # Mock generated output
-            df['generated_candidate'] = [f"mol_{i+1}" for i in range(len(df))]
-            df['predicted_activity'] = [round((i + 1) * 0.05, 3) for i in range(len(df))]
-            df.to_csv(output_csv, index=False)
+            raise FileNotFoundError("Deep learning/ML model missing for property prediction!")
+        
+        # -----------------------------------------------------------------
+        # 🧬 Run enhanced generative_design module if present
+        # -----------------------------------------------------------------
+        if generative_design and hasattr(generative_design, 'generate_candidates'):
+            generative_design.generate_candidates(
+                seed_csv=args.input,
+                output_csv=output_csv,
+                model_file=model_file,
+                n_generate=args.num_candidates
+            )
         else:
-            # -----------------------------------------------------------------
-            # 🧬 Run real generative model (if module available)
-            # -----------------------------------------------------------------
-            if generative_design and hasattr(generative_design, 'generate_candidates'):
-                generative_design.generate_candidates(
-                    seed_csv=args.input,
-                    output_csv=output_csv,
-                    model_file=model_file,
-                    n_generate=args.num_candidates
-                )
-            else:
-                print("[WARN] generative_design missing or incomplete. Using mock output.")
-                df = pd.read_csv(args.input)
-                df['generated_candidate'] = [f"mol_{i+1}" for i in range(len(df))]
-                df['predicted_activity'] = [round((i + 1) * 0.05, 3) for i in range(len(df))]
-                df.to_csv(output_csv, index=False)
+            print("[WARN] generative_design missing or incomplete. Exiting.")
+            raise ImportError("Required enhanced generative_design module missing.")
 
         # -----------------------------------------------------------------
         # ✅ Verify file created
@@ -106,7 +92,6 @@ def main():
     except Exception as e:
         logging.error(f"Pipeline failed: {e}", exc_info=True)
         print(f"[ERROR] Generative screening failed: {e}")
-
 
 # ---------------------------------------------------------------------
 # 🚀 Main Entry Point

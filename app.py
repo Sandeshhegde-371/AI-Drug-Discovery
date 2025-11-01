@@ -1,5 +1,11 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
+try:
+    from flask_cors import CORS
+except Exception:
+    # Flask-CORS not available; provide a no-op CORS function so the app can run without the package.
+    def CORS(app, **kwargs):
+        return None
+
 import os
 import uuid
 import subprocess
@@ -18,6 +24,10 @@ PIPELINE_FOLDER = os.path.join(BASE_DIR, 'pipelines')
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 os.makedirs(RESULTS_FOLDER, exist_ok=True)
 
+
+@app.route('/')
+def home():
+    return "✅ Flask backend is running successfully!"
 
 # ----------------- FRONTEND API -----------------
 @app.route('/api/run_pipeline', methods=['POST'])
