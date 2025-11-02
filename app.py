@@ -12,6 +12,7 @@ import subprocess
 import glob
 import pandas as pd
 import csv
+import sys
 
 app = Flask(__name__)
 CORS(app)
@@ -74,14 +75,19 @@ def api_run_pipeline():
 
         # ----------------- Run Pipeline -----------------
         cmd = [
-            'python', script_path,
+            sys.executable,  # uses same Python environment
+            script_path,
             '--input', input_file,
             '--num_candidates', str(num_candidates)
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+
+
+        # ✅ Run inside project root so relative imports (like from src import generative_design) work
+        result = subprocess.run(cmd, capture_output=True, text=True, cwd=BASE_DIR)
 
         print("PIPELINE STDOUT:", result.stdout)
         print("PIPELINE STDERR:", result.stderr)
+
 
         # ----------------- Locate Output File -----------------
         output_files = glob.glob(os.path.join(BASE_DIR, 'data', 'candidates', '*_output.csv'))
