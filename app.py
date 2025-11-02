@@ -33,28 +33,28 @@ def home():
 @app.route('/api/run_pipeline', methods=['POST'])
 def api_run_pipeline():
     """
-    Endpoint called from React frontend to run the pipeline.
-    Accepts JSON data with pipeline type, params, and optionally uploaded data.
-    Returns real results from generated CSV.
+    Accepts multipart/form-data:
+    - 'file': uploaded CSV file
+    - 'pipeline': which pipeline to run
+    - 'numCandidates': optional integer
     """
     try:
-        data = request.get_json()
-        pipeline = data.get('pipeline', 'generative')
-        params = data.get('params', {})
-        num_candidates = int(params.get('numCandidates', 50))
+        # Check for file upload
+        if 'file' not in request.files:
+            return jsonify({"error": "No file uploaded"}), 400
 
-        # Save input data if provided
-        uploaded_data = data.get('data')
-        input_file = os.path.join(UPLOAD_FOLDER, f"{uuid.uuid4()}_input.csv")
+        file = request.files['file']
+        if file.filename == '':
+            return jsonify({"error": "Empty filename"}), 400
 
-        if uploaded_data:
-            keys = uploaded_data[0].keys()
-            with open(input_file, 'w', newline='') as f:
-                writer = csv.DictWriter(f, fieldnames=keys)
-                writer.writeheader()
-                writer.writerows(uploaded_data)
-        else:
-            return jsonify({"error": "No input data provided"}), 400
+        # Save uploaded file
+        input_file = os.path.join(UPLOAD_FOLDER, f"{uuid.uuid4()}_{file.filename}")
+        file.save(input_file)
+        print(f"✅ Saved input file: {input_file}")
+
+        # Get form data
+        pipeline = request.form.get('pipeline', 'generative')
+        num_candidates = int(request.form.get('numCandidates', 50))
 
         # ----------------- Pipeline Map -----------------
         pipeline_script_map = {
@@ -89,8 +89,9 @@ def api_run_pipeline():
             return jsonify({"error": "Pipeline completed but no output file found"}), 500
 
         output_file = max(output_files, key=os.path.getctime)
+        print(f"✅ Output file: {output_file}")
 
-        # ----------------- Read & Return Real Results -----------------
+        # ----------------- Read & Return Results -----------------
         df = pd.read_csv(output_file)
         results_json = df.to_dict(orient='records')
 
@@ -101,7 +102,7 @@ def api_run_pipeline():
         })
 
     except Exception as e:
-        print("Error running pipeline:", e)
+        print("❌ Error running pipeline:", e)
         return jsonify({"error": str(e)}), 500
 
 
