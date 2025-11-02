@@ -19,11 +19,13 @@ def main():
     args = parser.parse_args()
     try:
         screening.virtual_screen(
-            input_csv=args.input,
-            model_file='./models/multitask_admet_model.h5',
-            output_csv='./results/virtual_screen_results.csv',
-            top_n=args.num_candidates
+        input_csv=args.input,
+        model_path='./models/multitask_admet_model.h5',
+        output_csv='./data/candidates/virtual_screen_results.csv',
+        top_n=args.num_candidates,
+        priority_metric="Binding_Pred_1"
         )
+
         logging.info("Virtual screening pipeline completed successfully.")
     except Exception as e:
         logging.error(f"Pipeline failed: {e}", exc_info=True)
