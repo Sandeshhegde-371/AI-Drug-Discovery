@@ -18,9 +18,9 @@ def main():
     args = parser.parse_args()
     try:
         predict_for_new_compounds.predict_activity(
-            input_csv=args.input,
-            model_file='./models/multitask_admet_model.h5',
-            output_csv='./results/property_predictions.csv'
+            candidate_csv=args.input,
+            models_dir='./models/',
+            output_csv='./data/candidates/property_predictions.csv'
         )
         logging.info("Property prediction pipeline completed successfully.")
     except Exception as e:
